@@ -35,7 +35,6 @@
 #include "portmacro.h"
 #include "hmi_user_uart.h"
 #include "AD9959.h"
-#include "DAC8563.h"
 #include "esp8266.h"
 /* USER CODE END Includes */
 
@@ -104,11 +103,12 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI3_Init();
   MX_TIM1_Init();
-  MX_TIM3_Init();
-  MX_TIM5_Init();
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   MX_TIM7_Init();
+  MX_TIM8_Init();
+  MX_TIM2_Init();
+  MX_TIM5_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -116,10 +116,15 @@ int main(void)
   AT24CXX_Init();      //AT24C02-EEPROM-初始化
   W25QXX_Init();       //W25Q128-FLASH -初始化
   Init_AD9959();       //AD9959-DDS    -初始化
-  DAC8563_Init();      //DAC8563-DAC   -初始化
 //  TFT_Init(&RxBuffer); //TFT-串口屏    -初始化
-  ESP8266_Init();      //ESP8266-WIFI  -初始化
+//  ESP8266_Init();      //ESP8266-WIFI  -初始化
   DATA_INIT();
+  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim5, TIM_IT_UPDATE);
+  HAL_TIM_IC_Start_IT(&htim8,TIM_CHANNEL_4);
+  for(;;)
+  {
+  }
   ucHeap[0] = 0;       //显示出 ucHeap 在 CCMRAM 的占用
   /* USER CODE END 2 */
 
@@ -197,17 +202,11 @@ static void MX_NVIC_Init(void)
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* TIM1_UP_TIM10_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 1, 0);
+  HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
-  /* TIM3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(TIM3_IRQn);
   /* USART1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(USART1_IRQn);
-  /* TIM5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM5_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(TIM5_IRQn);
   /* USART6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(USART6_IRQn);
