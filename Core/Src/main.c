@@ -114,6 +114,7 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  delay_init(168);
   AT24CXX_Init();      //AT24C02-EEPROM-初始化
   W25QXX_Init();       //W25Q128-FLASH -初始化
   Init_AD9959();       //AD9959-DDS    -初始化
@@ -196,13 +197,13 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* DMA1_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* TIM1_UP_TIM10_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
+  HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
   /* USART1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);

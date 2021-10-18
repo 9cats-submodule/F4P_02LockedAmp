@@ -106,6 +106,12 @@ void DATA_UPDATE(void);
 /*!
  *  \brief Êý×Ö×ª×Ö·û´®
  */
+
+void delay_init(u8 SYSCLK);
+void delay_ns(u8 t);
+void delay_us(u32 nus);
+void delay_ms(u16 nms);
+
 #define Str(format,num) (sprintf((char*)STR_BUF,format,num),STR_BUF)
 #define vTaskDelay_ms(ms) vTaskDelay(ms / portTICK_RATE_MS);
 

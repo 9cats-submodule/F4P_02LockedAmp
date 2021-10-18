@@ -32,8 +32,8 @@ extern osSemaphoreId_t    TFT_RX_LEDHandle;
 // ADS8688 采样完成信号量
 extern u8  SAMPLE_FINISHED;
 //用于 ADS8688 采样
-#define SAMPLE_POINT_MAX 2048
-#define SAMPLE_CH_MAX 2
+#define SAMPLE_POINT_MAX 40000
+#define SAMPLE_CH_MAX 1
 extern u32 SAMPLE_POINT;
 extern u16 ADS8688_BUF[][SAMPLE_POINT_MAX+200];
 //FFT变换用
