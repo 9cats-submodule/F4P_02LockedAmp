@@ -5,10 +5,10 @@
 // 定义可能会出现的兼容变量类型
 #define u32 uint32_t
 #define u16 uint16_t
-#define u8 uint8_t
+#define u8  uint8_t
 #define s32 int32_t
 #define s16 int16_t
-#define s8 int8_t
+#define s8  int8_t
 
 #include "main.h"
 #include "gpio.h"
@@ -73,27 +73,27 @@ u8 KEY_Scan(u8 mode); //按键扫描函数
 //IO输入输出操作,只对单个的IO
 //确保n的值?于16
 #define PAout(n) BIT_ADDR(GPIOA_ODR_Addr,n) //输出
-#define PAin(n) BIT_ADDR(GPIOA_IDR_Addr,n) //输入
+#define PAin(n) BIT_ADDR(GPIOA_IDR_Addr,n)  //输入
 #define PBout(n) BIT_ADDR(GPIOB_ODR_Addr,n) //输出
-#define PBin(n) BIT_ADDR(GPIOB_IDR_Addr,n) //输入
+#define PBin(n) BIT_ADDR(GPIOB_IDR_Addr,n)  //输入
 #define PCout(n) BIT_ADDR(GPIOC_ODR_Addr,n) //输出
-#define PCin(n) BIT_ADDR(GPIOC_IDR_Addr,n) //输入
+#define PCin(n) BIT_ADDR(GPIOC_IDR_Addr,n)  //输入
 #define PDout(n) BIT_ADDR(GPIOD_ODR_Addr,n) //输出
-#define PDin(n) BIT_ADDR(GPIOD_IDR_Addr,n) //输入
+#define PDin(n) BIT_ADDR(GPIOD_IDR_Addr,n)  //输入
 #define PEout(n) BIT_ADDR(GPIOE_ODR_Addr,n) //输出
-#define PEin(n) BIT_ADDR(GPIOE_IDR_Addr,n) //输入
+#define PEin(n) BIT_ADDR(GPIOE_IDR_Addr,n)  //输入
 #define PFout(n) BIT_ADDR(GPIOF_ODR_Addr,n) //输出
-#define PFin(n) BIT_ADDR(GPIOF_IDR_Addr,n) //输入
+#define PFin(n) BIT_ADDR(GPIOF_IDR_Addr,n)  //输入
 #define PGout(n) BIT_ADDR(GPIOG_ODR_Addr,n) //输出
-#define PGin(n) BIT_ADDR(GPIOG_IDR_Addr,n) //输入
+#define PGin(n) BIT_ADDR(GPIOG_IDR_Addr,n)  //输入
 #define PHout(n) BIT_ADDR(GPIOH_ODR_Addr,n) //输出
-#define PHin(n) BIT_ADDR(GPIOH_IDR_Addr,n) //输入
+#define PHin(n) BIT_ADDR(GPIOH_IDR_Addr,n)  //输入
 #define PIout(n) BIT_ADDR(GPIOI_ODR_Addr,n) //输出
-#define PIin(n) BIT_ADDR(GPIOI_IDR_Addr,n) //输入
+#define PIin(n) BIT_ADDR(GPIOI_IDR_Addr,n)  //输入
 #define PJout(n) BIT_ADDR(GPIOJ_ODR_Addr,n) //输出
-#define PJin(n) BIT_ADDR(GPIOJ_IDR_Addr,n) //输入
+#define PJin(n) BIT_ADDR(GPIOJ_IDR_Addr,n)  //输入
 #define PKout(n) BIT_ADDR(GPIOK_ODR_Addr,n) //输出
-#define PKin(n) BIT_ADDR(GPIOK_IDR_Addr,n) //输入
+#define PKin(n) BIT_ADDR(GPIOK_IDR_Addr,n)  //输入
 
 /*!
  *  \brief 数据初始化，若按下KEY0则恢复默认

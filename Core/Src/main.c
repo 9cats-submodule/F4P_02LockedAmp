@@ -35,7 +35,6 @@
 #include "portmacro.h"
 #include "hmi_user_uart.h"
 #include "AD9959.h"
-#include "esp8266.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,6 +108,8 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM2_Init();
   MX_TIM5_Init();
+  MX_TIM13_Init();
+  MX_TIM14_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -116,15 +117,14 @@ int main(void)
   AT24CXX_Init();      //AT24C02-EEPROM-初始化
   W25QXX_Init();       //W25Q128-FLASH -初始化
   Init_AD9959();       //AD9959-DDS    -初始化
-//  TFT_Init(&RxBuffer); //TFT-串口屏    -初始化
+  TFT_Init();          //TFT-串口屏    -初始化
 //  ESP8266_Init();      //ESP8266-WIFI  -初始化
   DATA_INIT();
-  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-  __HAL_TIM_ENABLE_IT(&htim5, TIM_IT_UPDATE);
-  HAL_TIM_IC_Start_IT(&htim8,TIM_CHANNEL_4);
-  for(;;)
-  {
-  }
+  __HAL_TIM_ENABLE_IT(&htim2 , TIM_IT_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim5 , TIM_IT_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim13, TIM_IT_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim14, TIM_IT_UPDATE);
+  HAL_TIM_IC_Start_IT(&htim8 , TIM_CHANNEL_4);
   ucHeap[0] = 0;       //显示出 ucHeap 在 CCMRAM 的占用
   /* USER CODE END 2 */
 

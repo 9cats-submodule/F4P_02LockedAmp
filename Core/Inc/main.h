@@ -63,8 +63,6 @@ void FaultChecK(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LOCK_PHASE_OUT_Pin GPIO_PIN_0
-#define LOCK_PHASE_OUT_GPIO_Port GPIOF
 #define KEY0_Pin GPIO_PIN_6
 #define KEY0_GPIO_Port GPIOF
 #define KEY1_Pin GPIO_PIN_7
@@ -103,6 +101,10 @@ void FaultChecK(void);
 #define TFT_USART_TX_GPIO_Port GPIOC
 #define TFT_USART_RX_Pin GPIO_PIN_7
 #define TFT_USART_RX_GPIO_Port GPIOC
+#define LOCK_PHASE_OUT_Pin GPIO_PIN_8
+#define LOCK_PHASE_OUT_GPIO_Port GPIOC
+#define LOCK_PHASE_IN_Pin GPIO_PIN_9
+#define LOCK_PHASE_IN_GPIO_Port GPIOC
 #define DEBUG_USART_TX_Pin GPIO_PIN_9
 #define DEBUG_USART_TX_GPIO_Port GPIOA
 #define DEBUG_USART_RX_Pin GPIO_PIN_10
@@ -115,6 +117,10 @@ void FaultChecK(void);
 #define ADS8688_MISO_GPIO_Port GPIOC
 #define ADS8688_MOSI_Pin GPIO_PIN_12
 #define ADS8688_MOSI_GPIO_Port GPIOC
+#define ADS8688_GND1_Pin GPIO_PIN_0
+#define ADS8688_GND1_GPIO_Port GPIOD
+#define ADS8688_GND0_Pin GPIO_PIN_1
+#define ADS8688_GND0_GPIO_Port GPIOD
 #define ADS8688_DAISY_Pin GPIO_PIN_2
 #define ADS8688_DAISY_GPIO_Port GPIOD
 #define ADS8688_RST_Pin GPIO_PIN_3

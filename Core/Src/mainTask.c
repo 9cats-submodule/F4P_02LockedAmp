@@ -6,11 +6,11 @@
 #include "arm_const_structs.h"
 #include "fdacoefs.h"
 #include "stdio.h"
-///*!
-// *  \brief  TIM1 配置 PRC, ARR
-// *  \param  PRC 预分配系数
-// *  \param  ARR 自动重装载值
-// */
+/*!
+ *  \brief  TIM1 配置 PRC, ARR
+ *  \param  PRC 预分配系数
+ *  \param  ARR 自动重装载值
+ */
 void TIM1_CONFIG(u32 PRC,u32 ARR)
 {
 	__HAL_TIM_DISABLE(&htim1);
@@ -19,13 +19,13 @@ void TIM1_CONFIG(u32 PRC,u32 ARR)
 	__HAL_TIM_SET_COUNTER(    &htim1,   0);
 	__HAL_TIM_ENABLE(&htim1);
 }
-//
-///*!
-// *  \brief  ADS8688 多通道 动态配置
-// *  \param  CH 所选通道 (例 0b11011101)
-// *  \param  range 通道范围
-// *  \warn!  初始化后120ms左右内采样值不精确
-// */
+
+/*!
+ *  \brief  ADS8688 多通道 动态配置
+ *  \param  CH 所选通道 (例 0b11011101)
+ *  \param  range 通道范围
+ *  \warn!  初始化后120ms左右内采样值不精确
+ */
 void ADS8688_MUL_CONFIG(u8 CH,u8 range)
 {
 	CH_NUM = 0;
@@ -36,13 +36,13 @@ void ADS8688_MUL_CONFIG(u8 CH,u8 range)
 		CH >>= 1;
 	}
 }
-//
-///*!
-// *  \brief  AD9959 动态配置
-// *  \param  freq 频率
-// *  \param  amp  幅度
-// *  \warn!  初始化后需要一定时间
-// */
+
+/*!
+ *  \brief  AD9959 动态配置
+ *  \param  freq 频率
+ *  \param  amp  幅度
+ *  \warn!  初始化后需要一定时间
+ */
 void AD9959_CONFIG(float freq,float mv)
 {
 	//只有通道1 和 通道3可用
@@ -50,10 +50,10 @@ void AD9959_CONFIG(float freq,float mv)
 	Out_mV(2, mv);
 }
 
-///*!
-// *  \brief  开启 TIM1 定时采样一定点数
-// *  \param  point 每个通道的采样点数
-// */
+/*!
+ *  \brief  开启 TIM1 定时采样一定点数
+ *  \param  point 每个通道的采样点数
+ */
 void ADS8688_SAMPLE(u16 point)
 {
 	SAMPLE_POINT = CH_NUM * point;
@@ -63,88 +63,54 @@ void ADS8688_SAMPLE(u16 point)
 		osDelay(1);
 	SAMPLE_FINISHED = NO;
 }
-//
-///*!
-// *  \brief    FFT变换
-// *  \param    CH 所选通道 (0~CH_NUL)
-// *  \detail   执行后 FFT_OUTPUT 和 FFT_OUTPUT_REAL 存下结果
-// */
-void FFT(u8 CH)
-{
-	arm_rfft_fast_instance_f32 S;
-	u16 i;
 
-	for(i=0;i<2048;i++)
-	{
-		FFT_INPUT[i] = ((float)ADS8688_BUF[CH][i] - Svar.ADS_OFFSET_ALL)*Svar.ADS_AMP/0x10000;
-	}
-	arm_rfft_fast_init_f32(&S,2048);                    //FFT初始化
-	arm_rfft_fast_f32(&S, FFT_INPUT, FFT_OUTPUT,0);     //FFT变化
-	arm_cmplx_mag_f32(FFT_OUTPUT,FFT_OUTPUT_REAL,2048); //求模
-}
-//
-///*!
-// *  \brief    THD 求失真度
-// *  \param    index 对应基波的频率
-// *  \detail   要先进行 FFT
-// */
-float THD(u16 index)
-{
-  //基波
-  float basic = FFT_OUTPUT_REAL[index];
-  //谐波
-  float harmon[5],harmon_power,high;
-  u8 i;
-
-  for(i=0;i<5;i++)
-  {
-  	harmon[i] = FFT_OUTPUT_REAL[index*(i+2)];
-  }
-  arm_power_f32(harmon, 5, &harmon_power);
-  arm_sqrt_f32(harmon_power,&high);
-
-  return high / basic;
-}
-//
-///*!
-// *  \brief    FFT滤波
-// *  \param    CH 所选通道 (0~CH_NUL)
-// *  \param    point 点数
-// */
-void FIR(u8 CH,u32 point)
-{
-	u32 i;
-	arm_fir_instance_f32 S;
-	u16 numBlocks = point/blockSize; //需要调用arm_fir_f32的次数
-
-	/* 初始化输入缓存 */
-	for(i=0;i<point;i++)
-		FIR_INPUT[i] = ((float)ADS8688_BUF[CH][i] - Svar.ADS_OFFSET_ALL)*Svar.ADS_AMP/0x10000;
-
-	/* 初始化结构体S */
-	arm_fir_init_f32(&S, firCoeffsNum,(float*)firCoeffs, FIR_STATE, blockSize);
-
-	/* 实现FIR滤波 */
-	for(i=0;i<numBlocks;i++)
-		arm_fir_f32(&S, FIR_INPUT + (i * blockSize), FIR_OUTPUT + (i * blockSize), blockSize);
-}
-
-///*!
-// *  \brief  主任务
-// */
-
+/*!
+ *  \brief  主任务
+ */
 void MainTask_Start(void *argument)
 {
   /* Infinite loop */
-	TIM1_CONFIG(25-1,210-1);						//采样率 32K
-	ADS8688_MUL_CONFIG(0b00000100,2);		//ADS 3通道开启，±5.12 V
+	//TIM1_CONFIG(25-1,210-1);						//采样率 32K
+	ADS8688_MUL_CONFIG(0b00000001,0x06);		//ADS 3通道开启，±5.12 V
 	osDelay(300);
 
-	for(;;){
-		static u16 num=0;
-		//SetTextValue(1, 41, (u8*)"233");
-		printf("COUNT=%d\r\n",num++);
-		SetTextValue(0, 1, (u8*)"233");
-		osDelay(1000);
+	SetTextValue(0, 21, (u8*)"采样值");
+	SetTextValue(0, 22, (u8*)"实际值");
+	SetTextValue(0, 1, Str("%d",Svar.ANTI_SHAKE_PHASE));
+	SetTextValue(0, 2, Str("%ld",Svar.OFFSET_PHASE));
+	SetTextValue(0, 3, Str("%f",Svar.a));
+	SetTextValue(0, 4, Str("%f",Svar.b));
+	SetTextValue(0, 5, Str("%f",Svar.c));
+	SetTextValue(0, 6, Str("%f",Svar.d));
+	SetTextValue(0, 7, Str("%f",Svar.e));
+
+	SetTextValue(0, 9, Str("%f",Svar.ADS_AMP));
+
+	for(;;){;
+		extern SPI_HandleTypeDef hspi3;
+		u8  rxbuf [4]    = {0};
+		u8  txbuf [4]    = {0};
+
+		//X
+		float avg=0;
+		float value=0;
+		u16 i;
+
+		//
+		for(i=0;i<1000;i++)
+		{
+			SAMPLE_BEGIN;  //重新拉低CS，ADS8688开始运输
+			HAL_SPI_TransmitReceive(&hspi3, txbuf, rxbuf, 2,20);
+			SAMPLE_END;
+			avg += *(u16*)(&rxbuf[2]);
+			osDelay(1);
+		}
+		avg = avg / i;
+		value = avg*5.12f/Svar.ADS_AMP*1000/0xffff;
+		SetTextValue(0, 31, Str("%.2f mv",value));
+		if(value < Svar.e)
+			SetTextValue(0, 32, Str("%.2f mv", (value-Svar.a) / Svar.b));
+		else
+			SetTextValue(0, 32, Str("%.2f mv", (value-Svar.c) / Svar.d));
 	}
 }

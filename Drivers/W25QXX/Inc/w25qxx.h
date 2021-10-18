@@ -28,7 +28,7 @@
 
 extern u16 W25QXX_TYPE;					//定义W25QXX芯片型号		   
 
-#define	W25QXX_CS 		PGout(8)  		//W25QXX的片选信号
+#define	W25QXX_CS 	PGout(8)  		//W25QXX的片选信号
 
 ////////////////////////////////////////////////////////////////////////////////// 
 //指令表
@@ -45,7 +45,7 @@ extern u16 W25QXX_TYPE;					//定义W25QXX芯片型号
 #define W25X_ChipErase			0xC7 
 #define W25X_PowerDown			0xB9 
 #define W25X_ReleasePowerDown	0xAB 
-#define W25X_DeviceID			0xAB 
+#define W25X_DeviceID					0xAB
 #define W25X_ManufactDeviceID	0x90 
 #define W25X_JedecDeviceID		0x9F 
 

@@ -21,7 +21,7 @@ extern u8 IPD;
 void queue_reset()
 {
 	que._head = que._tail = 0;
-	cmd_pos = cmd_state = 0;
+	cmd_pos   = cmd_state = 0;
 }
 
 void queue_push(qdata _data)

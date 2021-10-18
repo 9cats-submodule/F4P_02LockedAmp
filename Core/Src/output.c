@@ -1,6 +1,4 @@
 #include "output.h"
-#include "main.h"
-#include "usart.h"
 
 float OutData[4] = { 0 };
 
@@ -30,12 +28,10 @@ void OutPut_Data(void)
   unsigned char i;
   unsigned short CRC16 = 0;
   for(i=0;i<4;i++)
-   {
-
-    temp[i]  = (int)OutData[i];
-    temp1[i] = (unsigned int)temp[i];
-
-   }
+ {
+  temp[i]  = (int)OutData[i];
+  temp1[i] = (unsigned int)temp[i];
+ }
 
   for(i=0;i<4;i++)
   {
@@ -47,8 +43,5 @@ void OutPut_Data(void)
   databuf[8] = CRC16%256;
   databuf[9] = CRC16/256;
 
-//	USART1->DR = (databuf[i] & (uint16_t)0x01FF);
-//    while(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TXE) == RESET);
-//    while(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TC) == RESET);
-    HAL_UART_Transmit(&huart1, databuf, 10, 10);
+  HAL_UART_Transmit(&huart1, databuf, 10, 10);
 }

@@ -7,7 +7,6 @@
 #include "ADS8688.h"
 #include "cmd_process.h"
 #include "cmd_queue.h"
-#include "esp8266.h"
 
 //-------------------ADS8688接收和发送BUF-----------------
 static u8  rxbuf [4]    = {0};
@@ -18,7 +17,8 @@ static u8  txbuf [2]    = {0};
 u8 ADS8688_BUSY   = 0;     //ADS8688 DMA接收还未完成
 u8 FreMeasure_STA = 0;     //等距测量状态 0-预备 1-初次捕获 2-正在 3-过阈值 4-完成
 float RefFrequency = 84001168.0f;
-u32 OFFSET = 79000;
+u8 CaptureDir = 1;
+u8 CaptureDir_Locked = 0;
 //--------------------------------------------------------------------------------
 void TIM1_PeriodElapsedCallback(void);  //TIM1 更新ISR--用于ADS采样
 
@@ -27,44 +27,55 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM6) HAL_IncTick(); // FreeRTOS 系统时钟
 	if (htim == &htim1) TIM1_PeriodElapsedCallback();
 	if (htim == &htim2) {
-		__HAL_TIM_DISABLE(&htim2);
-		HAL_GPIO_WritePin(LOCK_PHASE_OUT_GPIO_Port, LOCK_PHASE_OUT_Pin, GPIO_PIN_SET);
-	}
-	if (htim == &htim5) {
-		__HAL_TIM_DISABLE(&htim5);
+		//输出高电平
 		HAL_GPIO_WritePin(LOCK_PHASE_OUT_GPIO_Port, LOCK_PHASE_OUT_Pin, GPIO_PIN_RESET);
 	}
-	if (htim == &htim7) {
-		if(ESP8266_ACK_STA == 1)
-		{
-			if(ESP8266_Timeout_Tick-- == 0)
-			{
-				ESP8266_ACK_STA=3;
-				HAL_TIM_Base_Stop_IT(&htim7);
-			}
-		}
+	if (htim == &htim5) {
+		//输出高电平
+		HAL_GPIO_WritePin(LOCK_PHASE_OUT_GPIO_Port, LOCK_PHASE_OUT_Pin, GPIO_PIN_SET);
+	}
+	if (htim == &htim13) {
+		//延时输出
+		__HAL_TIM_SET_COUNTER(&htim2, Svar.OFFSET_PHASE);
+		__HAL_TIM_ENABLE(&htim2);
+
+		//开始准备捕获上升沿
+		CaptureDir=1;
+		__HAL_TIM_SET_CAPTUREPOLARITY(&htim8, TIM_CHANNEL_4, TIM_INPUTCHANNELPOLARITY_RISING);
+		__HAL_TIM_CLEAR_IT(&htim8,TIM_IT_CC4);
+		__HAL_TIM_ENABLE_IT(&htim8, TIM_IT_CC4);
+	}
+	if (htim == &htim14) {
+		//延时输出
+		__HAL_TIM_SET_COUNTER(&htim5, Svar.OFFSET_PHASE);
+		__HAL_TIM_ENABLE(&htim5);
+
+		//开始准备捕获下降沿
+		CaptureDir=0;
+		__HAL_TIM_SET_CAPTUREPOLARITY(&htim8, TIM_CHANNEL_4, TIM_INPUTCHANNELPOLARITY_FALLING);
+		__HAL_TIM_CLEAR_IT(&htim8,TIM_IT_CC4);
+		__HAL_TIM_ENABLE_IT(&htim8, TIM_IT_CC4);
 	}
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-	static u8 CaptureDir = 1;
 	if(htim == &htim8) {
+		//失能中断
+		__HAL_TIM_DISABLE_IT(&htim8, TIM_IT_CC4);
 		switch(CaptureDir)
 		{
 			//下降沿捕获
 			case 0:{
-				__HAL_TIM_SET_CAPTUREPOLARITY(&htim8, TIM_CHANNEL_4, TIM_INPUTCHANNELPOLARITY_FALLING);
-				__HAL_TIM_SET_COUNTER(&htim2,OFFSET);
-				__HAL_TIM_ENABLE(&htim2);
-				CaptureDir=1;
+				//开启消抖
+				__HAL_TIM_SET_AUTORELOAD(&htim13, Svar.ANTI_SHAKE_PHASE);
+				__HAL_TIM_ENABLE(&htim13);
 			}break;
 			//上升沿捕获
 			case 1:{
-				__HAL_TIM_SET_CAPTUREPOLARITY(&htim8, TIM_CHANNEL_4, TIM_INPUTCHANNELPOLARITY_RISING);
-				__HAL_TIM_SET_COUNTER(&htim5,OFFSET);
-				__HAL_TIM_ENABLE(&htim5);
-				CaptureDir=0;
+				//开启消抖
+				__HAL_TIM_SET_AUTORELOAD(&htim14, Svar.ANTI_SHAKE_PHASE);
+				__HAL_TIM_ENABLE(&htim14);
 			}break;
 		}
 	}
@@ -72,28 +83,18 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart == &huart6)
+//TFT驱动依赖
+#ifdef TFT_USART
+	if (huart == &TFT_USART)
 	{
-		huart6.RxState = HAL_UART_STATE_READY;
-		__HAL_UNLOCK(&huart6);
-		/*TFT
-		queue_push(RxBuffer);
+		//处理接收队列
+		queue_push(TFT_RX_BUF);
 		if(queue_find_cmd(cmd_buffer,CMD_MAX_SIZE))
-		{
 			osMessageQueuePut(USART6_RXHandle,cmd_buffer,0,0);
-		}
-		*/
-		//
-		ESP8266_RX_PUSH(RxBuffer);
-		if(ESP8266_RX_Find(ESP8266_ACK_BUF, ESP8266_ACK_Size, ESP8266_Response_Ptr))
-			if(ESP8266_ACK_STA == 1)
-			{
-				ESP8266_ACK_STA = 2;
-				HAL_TIM_Base_Stop_IT(&htim7);
-			}
-		//
-		HAL_UART_Receive_IT(&huart6, &RxBuffer, 1);
+		//开启下一次接收
+		HAL_UART_Receive_IT(&TFT_USART, &TFT_RX_BUF, 1);
 	}
+#endif
 }
 
 void TIM1_PeriodElapsedCallback(void) {
@@ -124,5 +125,10 @@ void TIM1_PeriodElapsedCallback(void) {
   //正常情况无法到此处
     ADS8688_BUSY = ADS8688_BUSY;
   }
+}
+
+void TFT_TxCallback(void)
+{
+	osSemaphoreRelease(TFT_TX_LEDHandle);
 }
 

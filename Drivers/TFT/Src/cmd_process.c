@@ -3,10 +3,10 @@
 #include "hmi_user_uart.h"
 #include "cmd_queue.h"
 #include "cmd_process.h"
-#include "stdarg.h"
-#include "stdio.h"
+#include "stdlib.h"
 
 extern float goodAmp[2];
+u32 test=50;
 /*! 
  *  \brief  消息处理流程
  *  \param msg 待处理消息
@@ -92,12 +92,6 @@ void ProcessMessage(PCTRL_MSG msg, uint16 size)
 
 void SetTFTText(uint16 screen_id, uint16 control_id, char *text, ...)
 {
-	char buffer[20];
-	va_list ap;
-	va_start(ap, text);
-	vsprintf(buffer, text, ap);
-	va_end(ap);
-	SetTextValue(screen_id, control_id, (u8 *)buffer);
 }
 
 void SetTextValueInt32(uint16 screen_id, uint16 control_id, int32 value)
@@ -148,20 +142,6 @@ void NotifyTouchXY(uint8 press, uint16 x, uint16 y, void *userdata)
  */
 void NotifyButton(uint16 screen_id, uint16 control_id, uint8 state, void *userdata)
 {
-  if(state==1)
-  {
-	if(screen_id == 1 && control_id == 52)
-		MODE = 1;
-	if(screen_id == 1 && control_id == 53)
-		MODE = 2;
-	if(screen_id == 1 && control_id == 54)
-		MODE = 3;
-  }
-  else
-  {
-	if(screen_id == 1 && (control_id == 52 || control_id == 53 || control_id == 54))
-		MODE = 0;
-  }
 }
 
 /*! 
@@ -173,16 +153,33 @@ void NotifyButton(uint16 screen_id, uint16 control_id, uint8 state, void *userda
  */
 void NotifyText(uint16 screen_id, uint16 control_id, uint8 *str, void *userdata)
 {
-	if ((screen_id == 0) && (control_id == 60))
+	if(screen_id == 0 && control_id == 1)
 	{
-//		Svar.ADS_OFFSET = atoi((char*)str);
-//		Svar.ADS_OFFSET = atoff((char*)str);
+		Svar.ANTI_SHAKE_PHASE = atoi((char*) str);
 	}
-
-	if ((screen_id == 0) && (control_id == 59))
+	if(screen_id == 0 && control_id == 2)
 	{
-//		Svar.ADS_OFFSET = atoi((char*)str);
-//		Svar.C3_NORMAL = atoff((char*)str);
+		Svar.OFFSET_PHASE    = atoi((char*) str);
+	}
+	if(screen_id == 0 && control_id == 3)
+	{
+		Svar.a               = atoff((char*) str);
+	}
+	if(screen_id == 0 && control_id == 4)
+	{
+		Svar.b               = atoff((char*) str);
+	}
+	if(screen_id == 0 && control_id == 5)
+	{
+		Svar.c               = atoff((char*) str);
+	}
+	if(screen_id == 0 && control_id == 6)
+	{
+		Svar.d               = atoff((char*) str);
+	}
+	if(screen_id == 0 && control_id == 7)
+	{
+		Svar.e               = atoff((char*) str);
 	}
 }
 
@@ -206,6 +203,16 @@ void NotifyProgress(uint16 screen_id, uint16 control_id, uint32 value, void *use
  */
 void NotifySlider(uint16 screen_id, uint16 control_id, uint32 value, void *userdata)
 {
+	if(screen_id == 0 && control_id == 42)
+	{
+		if(value == 360) value=0;
+		u32 Phase = 84000000 / 360 / LP_Input_Freqency * value;
+		if(Phase < 250) Phase = 0;
+		else Phase = Phase-250;
+		Svar.OFFSET_PHASE = Phase;
+
+		SetTextValue(0, 2, Str("%ld",Svar.OFFSET_PHASE));
+	}
 }
 
 /*! 
